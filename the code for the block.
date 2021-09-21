@@ -1,0 +1,48 @@
+class Block {
+	constructor() {
+		this.width = BLOCK_SIZE;
+		this.height = this.width;
+		this.x = Math.random() * (canvas.width - this.width);
+		this.y = 0 - this.height; // off screen to start
+		this.speed = Math.random() * 10 + 1;
+		this.isGoodBlock = Math.random() <= goodBlockRatio;
+		this.isOffscreen = false;
+		this.isCaught = false;
+		this.isScored = false;
+
+		this.isFading = false;
+		this.opacity = 1;
+		this.color = this.isGoodBlock ? 120 : 290;
+	}
+
+	update() {
+		this.y += this.speed;
+		this.isOffscreen = this.y >= canvas.height;
+		this.checkForCatch();
+		if (this.isFading) this.opacity -= 0.1;
+	}
+
+	render() {
+		ctx.save();
+		ctx.fillStyle = `hsla(${this.color}, 100%, 20%, ${this.opacity})`;
+		ctx.fillRect(this.x, this.y, this.width, this.height);
+		ctx.restore();
+	}
+
+	checkForCatch() {
+		let bottom = this.y + this.height;
+
+		// if I am above the catch block, return
+		if (bottom < player.y) return;
+		if (this.isFading || this.isOffscreen || this.isCaught) return;
+
+		let rhs = this.x + this.width;
+		if (rhs < player.x || this.x > player.x + player.width) {
+			this.isFading = true;
+			return;
+		}
+
+		scoreBoard.scoreBlock(this);
+		this.isCaught = true;
+	}
+}
